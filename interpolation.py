@@ -40,17 +40,18 @@ def make_video(frames, fps, name="video", text_arr=None):
         f = (f * 255).cpu().numpy().astype("uint8")
         f = f.transpose(1, 2, 0)
 
-        white = (np.ones([48, f.shape[1], 3]) * 255).astype("uint8")
-        f = np.vstack((white, f))
+        if text_arr is not None:
+            white = (np.ones([48, f.shape[1], 3]) * 255).astype("uint8")
+            f = np.vstack((white, f))
 
-        text = str(text_arr[i])
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        font_scale = 0.5
-        font_color = (10, 10, 10)
-        thickness = 1
-        position = (int(f.shape[1] / 2 - 20), 30)
+            text = str(text_arr[i])
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            font_scale = 0.5
+            font_color = (10, 10, 10)
+            thickness = 1
+            position = (int(f.shape[1] / 2 - 20), 30)
 
-        cv2.putText(f, text, position, font, font_scale, font_color, thickness)
+            cv2.putText(f, text, position, font, font_scale, font_color, thickness)
         video_writer.append_data(np.array(f))
     video_writer.close()
 
@@ -174,7 +175,7 @@ def try_burn(
             size = min(n_frames - i, batch_size)
             range_i = torch.tensor(change_arr[i : i + size], dtype=torch.float32)
             lambda_ = range_i[:, None, None, None].to(device)
-            encoded_image = encoded_x1 + (lambda_ * encoded_x2 * 2)
+            encoded_image = encoded_x1 + (lambda_ * encoded_x2 * 1.2)
 
             if quantize:
                 encoded_image = vector_quantize(
@@ -272,7 +273,10 @@ def non_linear_interpolation(
 
     last_arr = np.concatenate(list_lin)
 
-    added_text = years.repeat(number)
+    if args.add_text:
+        added_text = years.repeat(number)
+    else:
+        added_text = None
 
     if args.burn:
         try_burn(
@@ -307,6 +311,15 @@ def non_linear_interpolation(
         )
 
 
+def get_image(image_path, args):
+    image = Image.open(image_path).convert("RGB")
+    mul_size = max(args.image_size / image.height, args.image_size / image.width)
+    new_size = int(max(args.image_size, image.width * mul_size)), int(
+        max(args.image_size, image.height * mul_size)
+    )
+    return image.resize(new_size, Image.LANCZOS)
+
+
 def load_model(args):
     model = VQGAN(args)
     checkpoint = torch.load(args.model_path, map_location=torch.device(args.device))
@@ -325,26 +338,19 @@ def run_interpolation(args):
 
     model = load_model(args)
 
-    image1 = Image.open(args.image1_path).convert("RGB")
-    mul_size = max(args.image_size / image1.height, args.image_size / image1.width)
-    new_size = int(max(args.image_size, image1.height * mul_size)), int(
-        max(args.image_size, image1.width * mul_size)
-    )
-    image1 = image1.resize(new_size, Image.LANCZOS)
+    image1 = get_image(args.image1_path, args)
 
     img_tensor1 = transform(image1)
 
     if args.burn:
         images = list()
         for i in range(1, 5):
-            image = Image.open(f"D:/Downloads/image_test ({i}).jpg")
-            image = image.resize((args.image_size, args.image_size), Image.LANCZOS)
-            images.append(transform(image))
+            images.append(
+                transform(get_image(f"./images/burn_images/image_{i}.jpg", args))
+            )
         img_tensor2 = torch.stack(images)
     else:
-        image2 = Image.open(args.image2_path).convert("RGB")
-        image2 = image2.resize((args.image_size, args.image_size), Image.LANCZOS)
-        img_tensor2 = transform(image2)
+        img_tensor2 = transform(get_image(args.image2_path, args))
 
     non_linear_interpolation(
         args.csv_path,
@@ -484,6 +490,12 @@ def main():
         type=bool,
         default=False,
         help="Use quantize",
+    )
+    parser.add_argument(
+        "--add-text",
+        type=bool,
+        default=False,
+        help="Add the years",
     )
     args = parser.parse_args()
     load_model(args)
