@@ -1,14 +1,16 @@
 import torch
-import argparse
-from PIL import Image
+from torch.nn import functional as F
 import torchvision.transforms as transforms
 from torchvision import utils
-import imageio
 import numpy as np
 import os
 from tqdm import tqdm
 import pandas as pd
 from pathlib import Path
+from PIL import Image
+import imageio
+import cv2
+import argparse
 
 from vqgan import VQGAN
 
@@ -19,10 +21,10 @@ def save_image(img, i: int = 0, name: str = ""):
     img_rescaled = (img.cpu() + 1) / 2
     # Save image
     os.makedirs(img_path, exist_ok=True)
-    utils.save_image(img_rescaled, img_path/f"{i:04}.png")
+    utils.save_image(img_rescaled, img_path / f"{i:04}.png")
 
 
-def make_video(frames, fps, name="video"):
+def make_video(frames, fps, name="video", text_arr=None):
     """Helper function to create a video"""
     os.makedirs(
         "videos",
@@ -32,13 +34,36 @@ def make_video(frames, fps, name="video"):
         os.path.join("videos", name + ".mp4"), format="FFMPEG", fps=fps
     )
     # Add each image
-    for f in frames:
-        f = (f + 1) / 2
+    for i in range(len(frames)):
+        f = (frames[i] + 1) / 2
         f = f.clip(0, 1)
         f = (f * 255).cpu().numpy().astype("uint8")
         f = f.transpose(1, 2, 0)
+
+        white = (np.ones([48, f.shape[1], 3]) * 255).astype("uint8")
+        f = np.vstack((white, f))
+
+        text = str(text_arr[i])
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        font_scale = 0.5
+        font_color = (10, 10, 10)
+        thickness = 1
+        position = (int(f.shape[1] / 2 - 20), 30)
+
+        cv2.putText(f, text, position, font, font_scale, font_color, thickness)
         video_writer.append_data(np.array(f))
     video_writer.close()
+
+
+def vector_quantize(x, codebook):
+    d = (
+        x.pow(2).sum(dim=-1, keepdim=True)
+        + codebook.pow(2).sum(dim=1)
+        - 2 * x @ codebook.T
+    )
+    indices = d.argmin(-1)
+    x_q = F.one_hot(indices, codebook.shape[0]).to(d.dtype) @ codebook
+    return x_q
 
 
 def interpolation_animate(
@@ -46,10 +71,12 @@ def interpolation_animate(
     x2: torch.Tensor,
     model: VQGAN,
     change_arr: np.ndarray,
+    quantize: bool = False,
     fps: int = 10,
     batch_size: int = 1,
     create_video=True,
     save_images=False,
+    added_text=None,
     file_name: str = "video",
     device="cpu",
 ):
@@ -70,6 +97,11 @@ def interpolation_animate(
             lambda_ = range_i[:, None, None, None].to(device)
             encoded_images = (1 - lambda_) * encoded_x1 + lambda_ * encoded_x2
 
+            if quantize:
+                encoded_images = vector_quantize(
+                    encoded_images.movedim(1, 3), model.codebook.embedding.weight
+                ).movedim(3, 1)
+
             # Decode the new latent space vectors
             new_images = model.decode(encoded_images)
 
@@ -80,11 +112,11 @@ def interpolation_animate(
             # Show frame
             if save_images:
                 for j in range(size):
-                    save_image(new_images[j].cpu(), i=i+j, name=file_name)
+                    save_image(new_images[j].cpu(), i=i + j, name=file_name)
 
         # Make video
         if create_video:
-            make_video(frames, fps, name=file_name)
+            make_video(frames, fps, name=file_name, text_arr=added_text)
 
 
 def switch_one_of_the_latent_vectors(
@@ -116,10 +148,12 @@ def try_burn(
     x2: torch.Tensor,
     model: VQGAN,
     change_arr: np.ndarray,
+    quantize: bool = False,
     fps: int = 10,
     batch_size: int = 1,
     create_video=True,
     save_images=False,
+    added_text=None,
     file_name: str = "video",
     device="cpu",
 ):
@@ -138,9 +172,14 @@ def try_burn(
         for i in tqdm(range(0, n_frames, batch_size)):
             # Create the new images in the latent space
             size = min(n_frames - i, batch_size)
-            range_i = torch.tensor(change_arr[i: i + size], dtype=torch.float32)
+            range_i = torch.tensor(change_arr[i : i + size], dtype=torch.float32)
             lambda_ = range_i[:, None, None, None].to(device)
             encoded_image = encoded_x1 + (lambda_ * encoded_x2 * 2)
+
+            if quantize:
+                encoded_image = vector_quantize(
+                    encoded_image.movedim(1, 3), model.codebook.embedding.weight
+                ).movedim(3, 1)
 
             # Decode the new latent space vectors
             new_images = model.decode(encoded_image)
@@ -156,7 +195,7 @@ def try_burn(
 
         # Make video
         if create_video:
-            make_video(frames, fps, name=file_name)
+            make_video(frames, fps, name=file_name, text_arr=added_text)
 
 
 def non_linear_interpolation(
@@ -189,6 +228,7 @@ def non_linear_interpolation(
     df_sorted = selected_rows.sort_values(by=["Year", "Months Code"])
     # To np array
     temp_change = df_sorted["Value"].values
+    years = df_sorted["Year"].values
     # Creating average of the 5 data point before
     temp_change_cum = temp_change.cumsum()
     temp_change_cum[4:] = temp_change_cum[4:] - temp_change_cum[:-4]
@@ -221,13 +261,18 @@ def non_linear_interpolation(
     chosen_arr[0] = 0
     chosen_arr[-1] = 1
     # Adding buffers between data points
-    number = 2
+    number = fps // 5
     list_lin = list()
 
-    for i in range(len(chosen_arr) - 1):
-        list_lin.append(np.linspace(chosen_arr[i], chosen_arr[i + 1], number))
+    for i in range(len(chosen_arr)):
+        if i == len(chosen_arr) - 1:
+            list_lin.append(np.linspace(chosen_arr[i], chosen_arr[i], number))
+        else:
+            list_lin.append(np.linspace(chosen_arr[i], chosen_arr[i + 1], number))
 
     last_arr = np.concatenate(list_lin)
+
+    added_text = years.repeat(number)
 
     if args.burn:
         try_burn(
@@ -235,10 +280,12 @@ def non_linear_interpolation(
             x2,
             model,
             last_arr,
+            quantize=args.quantize,
             fps=fps,
             batch_size=batch_size,
             create_video=create_video,
             save_images=save_images,
+            added_text=added_text,
             file_name=file_name,
             device=device,
         )
@@ -249,10 +296,12 @@ def non_linear_interpolation(
             x2,
             model,
             last_arr,
+            quantize=args.quantize,
             fps=fps,
             batch_size=batch_size,
             create_video=create_video,
             save_images=save_images,
+            added_text=added_text,
             file_name=file_name,
             device=device,
         )
@@ -268,7 +317,6 @@ def load_model(args):
 def run_interpolation(args):
     transform = transforms.Compose(
         [
-            transforms.Resize(args.image_size),
             transforms.CenterCrop(args.image_size),
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
@@ -277,17 +325,25 @@ def run_interpolation(args):
 
     model = load_model(args)
 
-    image1 = Image.open(args.image1_path).convert('RGB')
+    image1 = Image.open(args.image1_path).convert("RGB")
+    mul_size = max(args.image_size / image1.height, args.image_size / image1.width)
+    new_size = int(max(args.image_size, image1.height * mul_size)), int(
+        max(args.image_size, image1.width * mul_size)
+    )
+    image1 = image1.resize(new_size, Image.LANCZOS)
 
     img_tensor1 = transform(image1)
 
     if args.burn:
         images = list()
         for i in range(1, 5):
-            images.append(transform(Image.open(f"D:/Downloads/image_test ({i}).jpg")))
+            image = Image.open(f"D:/Downloads/image_test ({i}).jpg")
+            image = image.resize((args.image_size, args.image_size), Image.LANCZOS)
+            images.append(transform(image))
         img_tensor2 = torch.stack(images)
     else:
-        image2 = Image.open(args.image2_path).convert('RGB')
+        image2 = Image.open(args.image2_path).convert("RGB")
+        image2 = image2.resize((args.image_size, args.image_size), Image.LANCZOS)
         img_tensor2 = transform(image2)
 
     non_linear_interpolation(
@@ -301,7 +357,7 @@ def run_interpolation(args):
         save_images=args.save_images,
         file_name=args.file_name,
         device=args.device,
-        args=args
+        args=args,
     )
 
     # switch_one_of_the_latent_vectors(img_tensor1, img_tensor2, model)
@@ -336,7 +392,7 @@ def main():
     parser.add_argument(
         "--fps",
         type=int,
-        default=5,
+        default=10,
         help="The number of frames per second",
     )
     parser.add_argument(
@@ -418,13 +474,18 @@ def main():
         help="Use the burn images",
     )
     parser.add_argument(
-        "--old",
-        type=bool,
-        default=True,
+        "--old-de",
+        type=int,
+        default=1,
         help="Use the old decoder",
     )
+    parser.add_argument(
+        "--quantize",
+        type=bool,
+        default=False,
+        help="Use quantize",
+    )
     args = parser.parse_args()
-
     load_model(args)
     run_interpolation(args)
 

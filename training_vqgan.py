@@ -104,7 +104,10 @@ class TrainVQGAN:
                             exist_ok=True,
                         )
                         real_fake_images = torch.cat(
-                            (images.add(1).mul(0.5)[:4], decoded_images.add(1).mul(0.5)[:4])
+                            (
+                                images.add(1).mul(0.5)[:4],
+                                decoded_images.add(1).mul(0.5)[:4],
+                            )
                         )
                         vutils.save_image(
                             real_fake_images,
@@ -255,7 +258,7 @@ def main():
         help="The epoch number you wish to start from",
     )
     parser.add_argument(
-        "--old",
+        "--old-de",
         type=bool,
         default=True,
         help="Use the old decoder",
@@ -274,9 +277,13 @@ def main():
         model_checkpoint = torch.load(os.path.join(args.load_check_point, "model.pt"))
         train_vqgan.vqgan.load_state_dict(model_checkpoint)
         if os.path.exists(os.path.join(args.load_check_point, "train_ckpt.pt")):
-            trn_checkpoint = torch.load(os.path.join(args.load_check_point, "train_ckpt.pt"))
+            trn_checkpoint = torch.load(
+                os.path.join(args.load_check_point, "train_ckpt.pt")
+            )
             train_vqgan.discriminator.load_state_dict(trn_checkpoint["discriminator"])
-            train_vqgan.perceptual_loss.load_state_dict(trn_checkpoint["perceptual_loss"])
+            train_vqgan.perceptual_loss.load_state_dict(
+                trn_checkpoint["perceptual_loss"]
+            )
             train_vqgan.opt_vq.load_state_dict(trn_checkpoint["opt_vq"])
             train_vqgan.opt_disc.load_state_dict(trn_checkpoint["opt_disc"])
             args.start_epoch = trn_checkpoint["epoch"] + 1
@@ -287,6 +294,7 @@ def main():
         train_vqgan.perceptual_loss.load_from_pretrained()
 
     train_vqgan.train(args)
+
 
 if __name__ == "__main__":
     main()
