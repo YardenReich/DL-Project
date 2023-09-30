@@ -1,5 +1,3 @@
-import os
-
 from setuptools import setup, find_packages
 
 with open('requirements.txt') as f:
@@ -11,5 +9,6 @@ setup(
     version="1.0",
     description="",
     author="Shahar, Yarden",
+    packages=find_packages(),
     install_requires=install_requires,
 )
