@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 with open('requirements.txt') as f:
-    install_requires = f.read().splitlines()
+    install_requires = f.read().splitlines()[: -1]
 
 setup(
     name="vqgan",
