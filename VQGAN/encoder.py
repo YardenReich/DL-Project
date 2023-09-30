@@ -1,6 +1,6 @@
 import argparse
 import torch.nn as nn
-from helper import (
+from .helper import (
     ResidualBlock,
     NonLocalBlock,
     DownSampleBlock,

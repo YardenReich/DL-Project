@@ -2,10 +2,10 @@ import argparse
 
 import torch
 import torch.nn as nn
-from encoder import Encoder
-from decoder import Decoder
-import decoder_old
-from codebook import Codebook
+from .encoder import Encoder
+from .decoder import Decoder
+from VQGAN import decoder_old
+from .codebook import Codebook
 
 
 class VQGAN(nn.Module):

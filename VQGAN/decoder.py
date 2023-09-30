@@ -1,6 +1,6 @@
 import argparse
 import torch.nn as nn
-from helper import ResidualBlock, NonLocalBlock, UpSampleBlock, GroupNorm, Swish
+from .helper import ResidualBlock, NonLocalBlock, UpSampleBlock, GroupNorm, Swish
 
 
 class Decoder(nn.Module):
