@@ -12,7 +12,7 @@ import imageio
 import cv2
 import argparse
 
-from vqgan import VQGAN
+from VQGAN.vqgan import VQGAN
 
 
 def save_image(img, i: int = 0, name: str = ""):

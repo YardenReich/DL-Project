@@ -5,10 +5,10 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 from torchvision import utils as vutils
-from discriminator import Discriminator
-from lpips import LPIPS
-from vqgan import VQGAN
-from utils import load_data, weights_init
+from VQGAN.discriminator import Discriminator
+from VQGAN.lpips import LPIPS
+from VQGAN.vqgan import VQGAN
+from VQGAN.utils import load_data, weights_init
 from omegaconf import OmegaConf
 import shutil
 
