@@ -6,7 +6,7 @@ with open('requirements.txt') as f:
     install_requires = f.read().splitlines()
 
 setup(
-    name="VQGAN",
+    name="vqgan",
     py_modules=["VQGAN"],
     version="1.0",
     description="",
