@@ -4,6 +4,7 @@ from PIL import Image, ImageDraw
 from typing import List
 import imageio
 import os
+from sys import exit
 
 
 def is_country_in_temp(csv_path: str, country: str):
@@ -13,7 +14,7 @@ def is_country_in_temp(csv_path: str, country: str):
     if len(country_data) == 0:
         print("Couldn't find the country")
         print("Make sure the first letter is upper case")
-        exit(1)
+        exit()
 
 
 def read_temp_csv(csv_path: str, country: str):

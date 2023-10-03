@@ -6,6 +6,7 @@ import os
 import numpy as np
 import pandas as pd
 from PIL import Image
+from sys import exit
 
 
 def get_image(image_path, args):
@@ -109,7 +110,7 @@ def read_csv(
         chosen_arr = norm_def_relu
     else:
         print("Wrong type of interpolation")
-        exit(1)
+        exit()
 
     # Stating from one image, ending in the second
     chosen_arr[0] = 0
