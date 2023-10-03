@@ -12,8 +12,7 @@ def load_model(args):
     return model
 
 
-def main():
-    args = parse_interpolation()
+def run_interpolation(args):
     model = load_model(args)
 
     transform = transforms.Compose(
@@ -70,6 +69,11 @@ def main():
     if args.save_images:
         for i in range(len(frames)):
             save_image(frames[i], i, args.file_name)
+
+
+def main():
+    args = parse_interpolation()
+    run_interpolation(args)
 
 
 if __name__ == "__main__":

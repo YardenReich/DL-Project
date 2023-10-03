@@ -5,7 +5,7 @@ with open('requirements.txt') as f:
 
 setup(
     name="vqgan",
-    py_modules=["VQGAN"],
+    py_modules=["interpolation"],
     version="1.0",
     description="",
     author="Shahar, Yarden",
