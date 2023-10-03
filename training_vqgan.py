@@ -296,9 +296,6 @@ def main():
 
     train_vqgan.train(args)
 
-    train_vqgan.opt_vq.param_groups[0]['lr'] = 4e-6
-    train_vqgan.opt_disc.param_groups[0]['lr'] = 4e-6
-
 
 if __name__ == "__main__":
     main()
