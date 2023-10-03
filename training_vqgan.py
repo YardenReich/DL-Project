@@ -258,10 +258,11 @@ def main():
         help="The epoch number you wish to start from",
     )
     parser.add_argument(
-        "--old-de",
+        "--first-decoder",
         type=bool,
         default=True,
-        help="Use the old decoder",
+        action=argparse.BooleanOptionalAction,
+        help="Use the first decoder",
     )
 
     args = parser.parse_args()

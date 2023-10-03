@@ -12,7 +12,7 @@ class VQGAN(nn.Module):
     def __init__(self, args: argparse.Namespace):
         super(VQGAN, self).__init__()
         self.encoder = Encoder(args).to(device=args.device)
-        if args.old_de:
+        if args.first_decoder:
             self.decoder = decoder_old.Decoder(args).to(device=args.device)
         else:
             self.decoder = Decoder(args).to(device=args.device)
