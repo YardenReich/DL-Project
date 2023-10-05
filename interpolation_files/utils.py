@@ -66,13 +66,11 @@ def read_csv(
 ):
     if args.interpolation_type == 3:
         return np.linspace(0, 1, 12*fps), None
-    print(1)
     data = pd.read_csv(csv_file)
     # Country of choice
     country_name = args.country
     # Filter only the country dota
     country_data = data[data["Area"] == country_name]
-    # column_names = country_data.columns.tolist()
     # Filter the necessary columns
     country_data_col = country_data[["Year", "Months Code", "Value"]]
     # Annual difference from mean
