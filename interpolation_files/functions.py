@@ -96,10 +96,11 @@ def attribute_manipulation(
     model.eval()
     with torch.no_grad():
         encoded_x1, _, _ = model.encode(x1[None, :, :, :].to(device))
-        encoded_attribute_images, _, _ = model.encode(attribute_images.to(device))
+        encoded_with_attribute, _, _ = model.encode(attribute_images[:10].to(device))
+        encoded_without_attribute, _, _ = model.encode(attribute_images[10:].to(device))
 
-        with_attribute = torch.mean(encoded_attribute_images[:10], dim=0)
-        without_attribute = torch.mean(encoded_attribute_images[10:], dim=0)
+        with_attribute = torch.mean(encoded_with_attribute, dim=0)
+        without_attribute = torch.mean(encoded_without_attribute, dim=0)
 
         encoded_attribute_vec = with_attribute - without_attribute
 

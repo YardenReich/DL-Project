@@ -64,9 +64,9 @@ def read_csv(
     args,
     fps: int = 10,
 ):
-    print(args.interpolation_type)
     if args.interpolation_type == 3:
         return np.linspace(0, 1, 12*fps), None
+    print(1)
     data = pd.read_csv(csv_file)
     # Country of choice
     country_name = args.country
@@ -109,9 +109,11 @@ def read_csv(
         chosen_arr = acc_max_change
     elif args.interpolation_type == 2:
         chosen_arr = norm_def_relu
+    elif args.interpolation_type == 3:
+        pass
     else:
         print("Wrong type of interpolation")
-        exit()
+        exit(0)
 
     # Stating from one image, ending in the second
     chosen_arr[0] = 0
