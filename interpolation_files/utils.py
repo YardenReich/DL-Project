@@ -64,6 +64,7 @@ def read_csv(
     args,
     fps: int = 10,
 ):
+    print(args.interpolation_type)
     if args.interpolation_type == 3:
         return np.linspace(0, 1, 12*fps), None
     data = pd.read_csv(csv_file)
