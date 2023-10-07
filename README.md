@@ -1,6 +1,6 @@
-#Workshop On Deep Learning - Climate Video
+# Workshop On Deep Learning - Climate Video
 
-This is our project in workshop on deep learning
+This is our project in a workshop on deep learning
 
 ## Table of Contents
 
