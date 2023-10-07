@@ -2,10 +2,6 @@
 
 This is our project in a workshop on deep learning.
 
-The model checkpoints can be downloaded from:
-- [First Model](https://drive.google.com/uc?export=download&id=1uNS2G3908KpiJ7sPfLYev36NTGJHuptM)
-- [Second Model](https://drive.google.com/uc?export=download&id=1SZYE7CDWMJehD0MN0c8inp9e-IZKRHq1)
-
 
 ## Table of Contents
 
@@ -20,6 +16,14 @@ To get started with this project, follow these steps:
 
 1. Clone the repository: `git clone https://github.com/YardenReich/DL-Project.git`
 2. Install dependencies: `pip install requirements.txt`
+
+The models should be downloaded when you run the files, if not you can run:
+```
+python Download_models.py
+```
+You can also find them in:
+- [First Model](https://drive.google.com/uc?export=download&id=1uNS2G3908KpiJ7sPfLYev36NTGJHuptM)
+- [Second Model](https://drive.google.com/uc?export=download&id=1SZYE7CDWMJehD0MN0c8inp9e-IZKRHq1)
 
 ## Running examples:
 To run interpolation:
@@ -52,6 +56,6 @@ python clip_video.py -h
 
 ## Collab Notebooks
 
-- [Interpolation](https://github.com/YardenReich/DL-Project/blob/main/collab%20notebooks/interpolation.ipynb)
-- [CLIP](https://github.com/YardenReich/DL-Project/blob/main/collab%20notebooks/VQGAN_and_CLIP.ipynb)
+- [Interpolation](https://colab.research.google.com/drive/1wfDLjRhVif3-WKAIvzMW4eCTyUQ6lOg2?usp=sharing)
+- [CLIP](https://colab.research.google.com/drive/1euZJbCql8QaGQdl2gGAhdOpVgwoq8Hg1?usp=sharing)
 
