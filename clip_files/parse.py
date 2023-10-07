@@ -1,6 +1,8 @@
 import argparse
 import sys
 
+from Download_models import *
+
 
 def clip_parse():
     parser = argparse.ArgumentParser(description="my")
@@ -100,10 +102,12 @@ def clip_parse():
     if args.model == 1:
         args.first_decoder = 1
         if args.vqgan_checkpoint is None:
+            download_first_model()
             args.vqgan_checkpoint = "checkpoints/model_first.pt"
     elif args.model == 2:
         args.first_decoder = 0
         if args.vqgan_checkpoint is None:
+            download_second_model()
             args.vqgan_checkpoint = "checkpoints/model_second.pt"
     else:
         sys.exit(0)

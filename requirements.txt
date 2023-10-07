@@ -4,6 +4,7 @@ Pillow~=10.0.1
 Jinja2~=3.1.2
 torch
 torchvision
+gdown
 tqdm~=4.66.1
 ftfy~=6.1.1
 regex~=2023.8.8
