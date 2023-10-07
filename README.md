@@ -1,6 +1,8 @@
 ## Workshop On Deep Learning - Climate Video
 
-This is our project in a workshop on deep learning
+This is our project in a workshop on deep learning.
+The model checkpoints don't always work so the links to the models is:
+
 
 ## Table of Contents
 
@@ -43,4 +45,9 @@ python interpolation.py -h
 ```
 python clip_video.py -h
 ```
+
+## Collaborative Notebooks
+
+- [Notebook 1](collab_notebooks/interpolation.ipynb)
+- [Notebook 2](link_to_notebook_2.ipynb)
 
