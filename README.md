@@ -48,6 +48,6 @@ python clip_video.py -h
 
 ## Collab Notebooks
 
-- [Interpolation]("collab notebooks"/interpolation.ipynb)
-- [CLIP]("collab notebooks"/interpolation.ipynb)
+- [Interpolation](https://github.com/YardenReich/DL-Project/blob/main/collab%20notebooks/interpolation.ipynb)
+- [CLIP](https://github.com/YardenReich/DL-Project/blob/main/collab%20notebooks/VQGAN_and_CLIP.ipynb)
 
