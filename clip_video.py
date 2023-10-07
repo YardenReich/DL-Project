@@ -1,16 +1,13 @@
 from torchvision import transforms
 from torchvision.transforms import functional as TF
 from torch import optim
-import numpy as np
 import argparse
-from PIL import Image
 from tqdm import tqdm
-import imageio
-import os
 
 from VQGAN.vqgan import VQGAN
 import clip
 
+# from clip_files.masking import *
 from clip_files.functions import *
 from clip_files.parse import clip_parse
 from clip_files.utils import *
@@ -53,8 +50,7 @@ def checkin(i, losses):
     TF.to_pil_image(out[0].cpu()).save('progress.png')
 
 
-def ascend_txt():
-    global i
+def ascend_txt(idx: int):
     out = synth(z)
     iii = perceptor.encode_image(normalize(make_cutouts(out))).float()
 
@@ -67,15 +63,15 @@ def ascend_txt():
         result.append(prompt(iii))
     img = np.array(out.mul(255).clamp(0, 255)[0].cpu().detach().numpy().astype(np.uint8))[:, :, :]
     img = np.transpose(img, (1, 2, 0))
-    filename = f"steps/{i:04}.png"
+    filename = f"steps/{idx:04}.png"
     os.makedirs("steps/", exist_ok=True)
     imageio.imwrite(filename, np.array(img))
     return result
 
 
-def train(i):
+def train(idx):
     opt.zero_grad()
-    all_losses = ascend_txt()
+    all_losses = ascend_txt(idx)
     loss = sum(all_losses)
     loss.backward()
     opt.step()
@@ -124,45 +120,27 @@ if __name__ == '__main__':
     normalize = transforms.Normalize(mean=[0.48145466, 0.4578275, 0.40821073],
                                      std=[0.26862954, 0.26130258, 0.27577711])
 
-    pMs = []
     prompts = args.prompts.split('|')
-    prompt = prompts[0]
-    #for prompt in args.prompts:
-    txt, weight, stop = parse_prompt(prompt)
-    embed = perceptor.encode_text(clip.tokenize(txt).to(device)).float()
-    pMs.append(Prompt(embed, weight, stop).to(device))
+    prompts_len = [int(prompt_len) for prompt_len in args.prompts_len.split('|')]
+    if len(prompts_len) < len(prompts):
+        prompts_len.extend([50]*(len(prompts)-len(prompts_len)))
+    else:
+        prompts_len = prompts_len[:len(prompts)]
+    total_iterations = sum(prompts_len)
 
-    for prompt in args.image_prompts:
-        path, weight, stop = parse_prompt(prompt)
-        img = resize_image(Image.open(path).convert('RGB'), (sideX, sideY))
-        batch = make_cutouts(TF.to_tensor(img).unsqueeze(0).to(device))
-        embed = perceptor.encode_image(normalize(batch)).float()
-        pMs.append(Prompt(embed, weight, stop).to(device))
-
-    print(prompts)
-    print(prompt)
-    # exit(1)
     i = 0
-    with tqdm() as pbar:
-        while True:
-            train(i)
-            if i == 20:
-                break
-            i += 1
-            pbar.update()
-        pMs = []
-        prompt = args.prompts[1]
-        txt, weight, stop = parse_prompt(prompt)
-        embed = perceptor.encode_text(clip.tokenize(txt).to(device)).float()
-        pMs.append(Prompt(embed, weight, stop).to(device))
-
-        while True:
-            train(i)
-            if i == 40:
-                break
-            i += 1
-            pbar.update()
+    with tqdm(total=total_iterations) as pbar:
+        for prompt_idx in range(len(prompts)):
+            pMs = []
+            prompt = prompts[prompt_idx]
+            txt, weight, stop = parse_prompt(prompt)
+            embed = perceptor.encode_text(clip.tokenize(txt).to(device)).float()
+            pMs.append(Prompt(embed, weight, stop).to(device))
+            for j in range(prompts_len[prompt_idx]):
+                train(i)
+                pbar.update(1)
+                i += 1
 
     data, labels = read_temp_csv(args.csv_path, args.country)
 
-    create_video(data, labels, args.frame_rate, args.video_len, args.name)
+    create_video(data, labels, args.frame_rate, args.video_len, args.name, args.image_size, i-1)

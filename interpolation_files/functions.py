@@ -111,7 +111,7 @@ def attribute_manipulation(
         for i in tqdm(range(0, n_frames, batch_size)):
             # Create the new images in the latent space
             size = min(n_frames - i, batch_size)
-            range_i = torch.tensor(change_arr[i : i + size], dtype=torch.float32)
+            range_i = torch.tensor(change_arr[i: i + size], dtype=torch.float32)
             lambda_ = range_i[:, None, None, None].to(device)
             encoded_image = encoded_x1 + (lambda_ * encoded_attribute_vec * 1.5)
 

@@ -39,7 +39,6 @@ def read_temp_csv(csv_path: str, country: str):
     temp_change_cum = temp_change.cumsum()
     temp_change_cum[4:] = temp_change_cum[4:] - temp_change_cum[:-4]
     temp_change_cum5 = temp_change_cum / 5
-    print(temp_change_cum5)
     above_zero_change_cum5 = temp_change_cum5 + np.abs(temp_change_cum5.min())
     # Rounding the data
     round_change_cum5 = np.round(
@@ -56,7 +55,15 @@ def read_temp_csv(csv_path: str, country: str):
     return round_change_cum5, labels
 
 
-def create_video(datapoints: np.array, labels: List[int], frame_rate: int, video_length: int, name: str, image_size: int):
+def create_video(
+    datapoints: np.array,
+    labels: List[int],
+    frame_rate: int,
+    video_length: int,
+    name: str,
+    image_size: int,
+    number_of_frames: int,
+):
     min_fps = 10
     max_fps = 60
 
@@ -65,20 +72,42 @@ def create_video(datapoints: np.array, labels: List[int], frame_rate: int, video
     frames = []
 
     frames_per_datapoint = (frame_rate * video_length) / len(datapoints)
-    print(f"fpy:{frames_per_datapoint}")
     for i in range(len(datapoints) - 1):
         for j in range(int(frames_per_datapoint)):
-            ind = (j / frames_per_datapoint) * (
-                        datapoints[i + 1] * len(datapoints) - datapoints[i] * len(
-                    datapoints)) + datapoints[i] * len(datapoints)
+            lambda_ = j / frames_per_datapoint
+            ind = (
+                lambda_ * datapoints[i + 1] + (1 - lambda_) * datapoints[i]
+            ) * number_of_frames
             filename = f"steps/{int(ind):04}.png"
             old_im = Image.open(filename)
 
-            new_im = Image.new("RGB", color=(255, 255, 255), size=(480, 608))
-            new_im.paste(old_im, (0, 120))
+            new_im = Image.new(
+                "RGB", color=(255, 255, 255), size=(image_size, int(image_size * 1.25))
+            )
+            new_im.paste(old_im, (0, int(image_size * 0.25)))
             drawn_im = ImageDraw.Draw(new_im)
-            drawn_im.text((220, 60), f"{labels[i]}", fill=(0, 0, 0), size=60)
+            drawn_im.text(
+                (int(image_size / 2 - 20), int(image_size / 8)),
+                f"{labels[i]}",
+                fill=(0, 0, 0),
+                size=60,
+            )
             frames.append(new_im)
+
+    filename = f"steps/{int(number_of_frames):04}.png"
+    old_im = Image.open(filename)
+    new_im = Image.new(
+        "RGB", color=(255, 255, 255), size=(image_size, int(image_size * 1.25))
+    )
+    new_im.paste(old_im, (0, int(image_size * 0.25)))
+    drawn_im = ImageDraw.Draw(new_im)
+    drawn_im.text(
+        (int(image_size / 2 - 20), int(image_size / 8)),
+        f"{labels[-1]}",
+        fill=(0, 0, 0),
+        size=60,
+    )
+    frames.append(new_im)
 
     os.makedirs(
         "videos",

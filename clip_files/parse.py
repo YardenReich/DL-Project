@@ -12,7 +12,7 @@ def clip_parse():
     parser.add_argument(
         "--image-path",
         type=str,
-        default="./images/image1.jpeg",
+        default="./images/image1.jpg",
         help="Path to image",
     )
     parser.add_argument(
@@ -26,6 +26,12 @@ def clip_parse():
         type=str,
         default="40|100",
         help="The prompts len divided by |",
+    )
+    parser.add_argument(
+        "--mask-text",
+        type=str,
+        default="tree",
+        help="Mask the text in the image",
     )
     parser.add_argument(
         "--image-size",
@@ -48,7 +54,7 @@ def clip_parse():
     parser.add_argument(
         "--weight-decay",
         type=float,
-        default=3.5,
+        default=4,
         help="Weight Decay of the image changes",
     )
     parser.add_argument(
@@ -81,12 +87,17 @@ def clip_parse():
         default="video_clip",
         help="Name of the video",
     )
+    parser.add_argument(
+        "--number_of_cut_outs",
+        type=int,
+        default=4,
+        help="The number of cutouts for clip",
+    )
 
     args = parser.parse_args()
 
     args.clip_model = 'ViT-B/32'
     args.step_size = 0.1
-    args.number_of_cut_outs = 2
     args.cut_pow = 1.0
     args.image_prompts = list()
 
