@@ -1,4 +1,5 @@
 import argparse
+import sys
 
 
 def parse_interpolation():
@@ -10,9 +11,15 @@ def parse_interpolation():
         help="Path to the csv file",
     )
     parser.add_argument(
+        "--model",
+        type=int,
+        default=1,
+        help="To change the model, options: 1, 2",
+    )
+    parser.add_argument(
         "--model-path",
         type=str,
-        default="./checkpoints/model.pt",
+        default=None,
         help="Path to the model checkpoint",
     )
     parser.add_argument(
@@ -42,8 +49,8 @@ def parse_interpolation():
     parser.add_argument(
         "--image-size",
         type=int,
-        default=256,
-        help="Image height and width (default: 256)",
+        default=480,
+        help="Image height and width (default: 480)",
     )
     parser.add_argument(
         "--num-codebook-vectors",
@@ -66,7 +73,7 @@ def parse_interpolation():
     parser.add_argument(
         "--device",
         type=str,
-        default="cpu",
+        default=None,
         help="The device to use",
     )
     parser.add_argument(

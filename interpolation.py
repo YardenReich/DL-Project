@@ -9,7 +9,7 @@ def load_model(args):
     model = VQGAN(args)
     checkpoint = torch.load(args.model_path, map_location=torch.device(args.device))
     model.load_state_dict(checkpoint)
-    return model
+    return model.eval()
 
 
 def run_interpolation(args):
@@ -73,6 +73,21 @@ def run_interpolation(args):
 
 def main():
     args = parse_interpolation()
+
+    if args.model == 1:
+        args.first_decoder = 1
+        if args.model_path is None:
+            args.model_path = "checkpoints/model_first.pt"
+    elif args.model == 2:
+        args.first_decoder = 0
+        if args.model_path is None:
+            args.model_path = "checkpoints/model_second.pt"
+    else:
+        sys.exit(0)
+
+    if args.device is None:
+        args.device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+
     run_interpolation(args)
 
 

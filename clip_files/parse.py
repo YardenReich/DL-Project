@@ -1,4 +1,5 @@
 import argparse
+import sys
 
 
 def clip_parse():
@@ -40,16 +41,16 @@ def clip_parse():
         help="size of the final images",
     )
     parser.add_argument(
-        "--vqgan-checkpoint",
-        type=str,
-        default="./checkpoints/model.pt",
-        help="Path to the model",
+        "--model",
+        type=int,
+        default=1,
+        help="To change the model, options: 1, 2",
     )
     parser.add_argument(
-        "--first-decoder",
-        type=bool,
-        default=True,
-        help="To use the second decoder",
+        "--vqgan-checkpoint",
+        type=str,
+        default=None,
+        help="Path to the model",
     )
     parser.add_argument(
         "--weight-decay",
@@ -95,6 +96,17 @@ def clip_parse():
     )
 
     args = parser.parse_args()
+
+    if args.model == 1:
+        args.first_decoder = 1
+        if args.vqgan_checkpoint is None:
+            args.vqgan_checkpoint = "checkpoints/model_first.pt"
+    elif args.model == 2:
+        args.first_decoder = 0
+        if args.vqgan_checkpoint is None:
+            args.vqgan_checkpoint = "checkpoints/model_second.pt"
+    else:
+        sys.exit(0)
 
     args.clip_model = 'ViT-B/32'
     args.step_size = 0.1
