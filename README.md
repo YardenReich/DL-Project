@@ -1,7 +1,10 @@
 ## Workshop On Deep Learning - Climate Video
 
 This is our project in a workshop on deep learning.
-The model checkpoints don't always work so the links to the models is:
+
+The model checkpoints can be downloaded from:
+- [First Model](https://drive.google.com/uc?export=download&id=1uNS2G3908KpiJ7sPfLYev36NTGJHuptM)
+- [Second Model](https://drive.google.com/uc?export=download&id=1SZYE7CDWMJehD0MN0c8inp9e-IZKRHq1)
 
 
 ## Table of Contents
