@@ -8,6 +8,7 @@ The model checkpoints don't always work so the links to the models is:
 
 - [Installation](#installation)
 - [Running examples](#running-examples)
+- [Collab Notebooks](#collab-notebooks)
 
 
 ## Installation
