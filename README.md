@@ -7,7 +7,7 @@ The model checkpoints don't always work so the links to the models is:
 ## Table of Contents
 
 - [Installation](#installation)
-- [Usage](#runningexamples)
+- [Running examples](#running-examples)
 
 
 ## Installation
@@ -46,8 +46,8 @@ python interpolation.py -h
 python clip_video.py -h
 ```
 
-## Collaborative Notebooks
+## Collab Notebooks
 
-- [Notebook 1](collab_notebooks/interpolation.ipynb)
+- [Interpolation]("collab notebooks/interpolation.ipynb")
 - [Notebook 2](link_to_notebook_2.ipynb)
 
