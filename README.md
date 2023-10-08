@@ -26,11 +26,11 @@ You can also find them in:
 - [Second Model](https://drive.google.com/uc?export=download&id=1SZYE7CDWMJehD0MN0c8inp9e-IZKRHq1)
 
 ## Running examples:
-To run interpolation:
+To run interpolation with the default pictures:
 ```
 python interpolation.py
 ```
-To run attribute manipulation:
+To run attribute manipulation the default pictures:
 ```
 python interpolation.py --attribute
 ```
@@ -38,7 +38,7 @@ To add your own images to interpolation:
 ```
 python interpolation.py --image1-path {image path} --image2-path {image path}
 ```
-To run clip:
+To run clip the default pictures:
 ```
 python clip_video.py
 ```
